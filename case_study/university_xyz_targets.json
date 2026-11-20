@@ -1,0 +1,100 @@
+[
+  {
+    "target_id": "https://github.com/moodle/moodle",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: LMS",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/OS4ED/openSIS-Classic",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Student Registration",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/orangehrm/orangehrm",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: HR Records",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/nextcloud/server",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Document Management",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/proxmox/pve-manager",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Private Cloud (Proxmox VE)",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/frappe/erpnext",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Accounting",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/keycloak/keycloak",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Single Sign-On",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/Koha-Community/Koha",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Library Management",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/glpi-project/glpi",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Helpdesk and Asset Tracking",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/civicrm/civicrm-core",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Admissions and Alumni CRM",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/mattermost/mattermost",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Real-Time Chat",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/bigbluebutton/bigbluebutton",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Video Classroom",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/DSpace/DSpace",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Research Repository",
+    "active": 1
+  },
+  {
+    "target_id": "https://github.com/LibreBooking/app",
+    "target_type": "github_repo",
+    "source_name": "university_xyz",
+    "notes": "University of XYZ case study: Room and Event Scheduling",
+    "active": 1
+  }
+]

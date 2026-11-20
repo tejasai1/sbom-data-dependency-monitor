@@ -1,0 +1,34 @@
+from_system,to_system,data
+Proxmox VE,Keycloak,Hosting
+Proxmox VE,CiviCRM,Hosting
+Proxmox VE,openSIS,Hosting
+Proxmox VE,ERPNext,Hosting
+Proxmox VE,OrangeHRM,Hosting
+Proxmox VE,DSpace,Hosting
+Proxmox VE,Moodle,Hosting
+Proxmox VE,Nextcloud,Hosting
+Proxmox VE,LibreBooking,Hosting
+Proxmox VE,Mattermost,Hosting
+Proxmox VE,BigBlueButton,Hosting
+Proxmox VE,Koha,Hosting
+Proxmox VE,GLPI,Hosting
+Keycloak,CiviCRM,SSO and identity sync
+Keycloak,openSIS,SSO and identity sync
+Keycloak,ERPNext,SSO and identity sync
+Keycloak,OrangeHRM,SSO and identity sync
+Keycloak,DSpace,SSO and identity sync
+CiviCRM,openSIS,Data link (unlabelled in diagram)
+CiviCRM,Moodle,Admitted student data
+openSIS,Moodle,Course rosters
+Moodle,openSIS,Final grades
+openSIS,ERPNext,Tuition billing
+openSIS,LibreBooking,Room and class schedules
+OrangeHRM,ERPNext,Payroll and tax
+OrangeHRM,Nextcloud,Contracts and documents
+OrangeHRM,LibreBooking,Room schedules
+ERPNext,Nextcloud,Audits and invoices
+ERPNext,Mattermost,Virtual classrooms and communication
+ERPNext,BigBlueButton,Virtual classrooms and communication
+Moodle,Koha,Borrowing privileges
+Moodle,GLPI,IT tickets and equipment inventory
+Koha,ERPNext,Fees and fines
