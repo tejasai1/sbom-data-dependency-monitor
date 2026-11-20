@@ -1,326 +1,177 @@
-# SBOM Scanner Tool
+# SBoM Monitoring Platform with Data Dependencies
 
-Generate SBOM (Software Bill of Materials) and vulnerability reports for any GitHub repository or local path. Includes both a web UI and command-line interface. Reports are saved as JSON and CSV files with dependency tree data and vulnerability information.
+Capstone project: *Developing Automated Tools to Use Software Bills of Materials for Vulnerability Monitoring*
+Tejasai Kola, MS Computer Science, Western New England University. Advisor: Dr. Sergey Butakov.
+
+The platform scans software repositories with Syft and Grype, stores their packages and
+vulnerabilities in MySQL, and monitors them over time. On top of that it records **data
+dependencies** between systems (which system uses data that another creates or changes), traces
+them upstream and downstream, and uses a language model component, **FlowTrace**, to suggest data
+links from source code and to write impact reports.
 
 ## Features
 
-- **SBOM Generation**: Generate comprehensive Software Bill of Materials using Syft
-- **Vulnerability Scanning**: Scan for security vulnerabilities using Grype
-- **Web UI**: Easy-to-use web interface for scanning repositories
-- **Command-Line Interface**: Full-featured CLI for automation and scripting
-- **Repository Caching**: Cache cloned repositories for faster repeat scans
-- **Progress Tracking**: Real-time progress indicators and timing information
-- **Multiple Report Formats**: JSON and CSV output formats
-- **Dependency Graph**: Visualize package dependencies
+- **Scanning and monitoring:** SBoM and vulnerability scans of GitHub repositories or local
+  folders, repeated automatically on an interval set in the Settings tab.
+- **Data dependency recording and tracing:** a manager records which systems get data from which;
+  the platform shows each system's upstream and downstream tree with hop counts and the latest
+  vulnerability summary of every system in it.
+- **AI-suggested data dependencies:** FlowTrace reads a system's code and suggests data links with
+  the exact lines of code as evidence. Nothing is recorded until a manager approves it.
+- **AI impact report:** explains which systems could be affected if a system is compromised, using
+  only facts from the database. Every system and vulnerability ID in a report is checked against
+  those facts before it is shown.
+- **Code evidence:** every link found in code can be opened to show the lines that prove it.
 
-## Prerequisites
+## Requirements
 
-- **Python 3.11+** and `pip`
-- **Git** (tested with Git for Windows 2.51+). The scanner will auto-detect Git in common install paths, but adding it to `PATH` is recommended.
-- **Syft** and **Grype** binaries (included in `sbom-tools/syft/` and `sbom-tools/grype/` directories)
-  - If you move them, set `SYFT_PATH` and `GRYPE_PATH` environment variables
+| Software | Version used |
+|---|---|
+| Windows 10/11 or Windows Server | |
+| Python | 3.11 or newer |
+| MySQL Server (with MySQL Workbench, optional) | 8.0 |
+| Git for Windows | 2.51 |
+| Syft | 1.17.0 |
+| Grype | 0.84.0 |
+| A model API key (Meta Model API by default) | needed only for the AI features |
 
-## Setup
+## Setup on a new machine
 
-1. **Create and activate a virtual environment** (optional but recommended):
-   ```powershell
-   cd "C:\New folder"
-   python -m venv venv
-   .\venv\Scripts\activate
-   ```
+All commands are for PowerShell.
 
-2. **Install dependencies**:
-   ```powershell
-   pip install -r requirements.txt
-   ```
-   
-   Or install individually:
-   ```powershell
-   pip install flask waitress
-   ```
-
-3. **Verify tools are available**:
-   ```powershell
-   git --version
-   sbom-tools\syft\syft.exe version
-   sbom-tools\grype\grype.exe version
-   ```
-
-## Web UI Usage
-
-### Starting the Server
-
-1. **Start the server** (from PowerShell, inside the activated venv if you created one):
-   ```powershell
-   python "C:\New folder\ui_app.py"
-   ```
-
-   The server will automatically:
-   - Use **Waitress** (production WSGI server) if available - handles long-running scans without timeout issues
-   - Fall back to Flask dev server if Waitress is not installed (with a warning about 120-second timeout limit)
-
-2. **Open your browser** and navigate to `http://127.0.0.1:5000`
-
-3. **Run a scan**:
-   - Paste a repository URL (e.g., `https://github.com/opencv/opencv`)
-   - Or enter a local path
-   - Check "Use cache" to keep a local copy for faster repeat scans
-   - Click "Run Scan"
-
-### Web UI Features
-
-- **Real-time Progress**: See scanning progress with timing information
-- **Report Summary**: View vulnerability counts and package information
-- **Dependency Tree**: Interactive dependency visualization
-- **Download Reports**: Download JSON and CSV reports
-- **Report History**: List and view previous scans
-
-## Command-Line Usage
-
-### Basic Scan
+### 1. Clone the repository
 
 ```powershell
-python "C:\New folder\sbom-tools\sbom.py" https://github.com/opencv/opencv
+git clone https://github.com/tejasai1/sbom-data-dependency-monitor.git
+cd sbom-data-dependency-monitor
 ```
 
-This will:
-1. Clone the repository (if GitHub URL)
-2. Generate SBOM
-3. Scan for vulnerabilities
-4. Create JSON and CSV reports
-5. Display a summary
+The repository is private, so Git asks you to sign in to GitHub the first time.
 
-### Command-Line Options
+### 2. Create the Python environment
 
 ```powershell
-# Use repository caching (faster for repeated scans)
-python "C:\New folder\sbom-tools\sbom.py" https://github.com/opencv/opencv --cache
-
-# Skip vulnerability scanning (faster, SBOM only)
-python "C:\New folder\sbom-tools\sbom.py" https://github.com/opencv/opencv --skip-vuln
-
-# Use full clone instead of shallow clone
-python "C:\New folder\sbom-tools\sbom.py" https://github.com/opencv/opencv --full-clone
-
-# List all available reports
-python "C:\New folder\sbom-tools\sbom.py" --list-reports
-
-# View a specific report
-python "C:\New folder\sbom-tools\sbom.py" --report-id opencv-opencv
-
-# Combine options
-python "C:\New folder\sbom-tools\sbom.py" https://github.com/opencv/opencv --cache --skip-vuln
+python -m venv venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+.\venv\Scripts\activate
+pip install -r requirements.txt
 ```
 
-### Command-Line Options Reference
+`Set-ExecutionPolicy` is needed once per PowerShell window, so the activate script is allowed to run.
 
-| Option | Description |
-|--------|-------------|
-| `--cache` | Enable repository caching (reuse local clone between scans) |
-| `--skip-vuln` | Skip vulnerability scanning (faster, only generates SBOM) |
-| `--full-clone` | Clone repositories with full history instead of shallow clone |
-| `--list-reports` | List existing reports and exit without running a new scan |
-| `--report-id <id>` | Show a previously generated report by scan ID |
+### 3. Add Syft and Grype
 
-## Output
+The scanner programs are not stored in the repository. Download the Windows versions from Anchore:
 
-### Report Files (Local Storage)
+- Syft 1.17.0: https://github.com/anchore/syft/releases/tag/v1.17.0 (file `syft_1.17.0_windows_amd64.zip`)
+- Grype 0.84.0: https://github.com/anchore/grype/releases/tag/v0.84.0 (file `grype_0.84.0_windows_amd64.zip`)
 
-Reports are automatically saved in the `reports/` directory:
+Unzip them so the programs are at:
 
-- **Location**: `C:\New folder\reports\`
-- **JSON Report**: `reports/<scan-id>.json`
-  - Complete scan data including packages, vulnerabilities, dependency graph
-  - Structured format for programmatic access
-  - **View**: Open with any text editor or download from Web UI
-  
-- **CSV Report**: `reports/<scan-id>.csv`
-  - Tabular format with package and vulnerability information
-  - Easy to import into spreadsheets or databases
-  - **View**: Open with Excel, Notepad, or download from Web UI
-
-**To view files in PowerShell** (path has spaces, so use quotes):
-```powershell
-# Navigate to reports folder
-cd "C:\New folder\reports"
-
-# List all report files
-dir
-
-# Or list only JSON files
-dir *.json
-
-# Or list only CSV files
-dir *.csv
-
-# Open a specific file in default application
-Start-Process "opencv-opencv.json"
-Start-Process "opencv-opencv.csv"
-
-# Or open folder in Windows Explorer
-explorer "C:\New folder\reports"
+```
+sbom-tools\syft\syft.exe
+sbom-tools\grype\grype.exe
 ```
 
-
-### Report Contents
-
-Each report includes:
-
-- **Summary**:
-  - Total packages found
-  - Total vulnerabilities found
-  - Vulnerability counts by severity (Critical, High, Medium, Low, Negligible)
-
-- **Package Details**:
-  - Package name, version, and type
-  - Associated vulnerabilities (if any)
-  - Fixed versions (if available)
-
-- **Dependency Graph**:
-  - Package dependency relationships
-  - Parent-child relationships
-
-## Performance Tips
-
-### For Large Repositories
-
-Large repositories (like OpenCV, OpenSSL, Mozilla Firefox) can take significant time to scan:
-
-- **SBOM Generation**: 5-15 minutes
-- **Vulnerability Scanning**: 10-30 minutes
-- **Total Time**: 20-40 minutes for full scan
-
-**To speed up scans:**
-
-1. **Use `--skip-vuln`** for SBOM-only scans (5-10 minutes)
-2. **Use `--cache`** for faster repeat scans (skips cloning)
-3. **Use shallow clones** (default, faster than full clones)
-4. **Start with smaller repositories** to test the setup
-
-### Example: Fast SBOM-Only Scan
+Check them:
 
 ```powershell
-python "C:\New folder\sbom-tools\sbom.py" https://github.com/opencv/opencv --skip-vuln --cache
+sbom-tools\syft\syft.exe version
+sbom-tools\grype\grype.exe version
 ```
 
-This will:
-- Skip vulnerability scanning (saves 10-30 minutes)
-- Use cached repository if available (saves cloning time)
-- Complete in ~5-10 minutes instead of 20-40 minutes
+Grype downloads its vulnerability database on the first scan, so the machine needs internet access.
 
-## Troubleshooting
+### 4. Create the database
 
-### Server Timeout Issues
+Create an empty database and load the table structure (10 tables) and the default Settings row.
+Change the database name if you want a separate database, for example for a new case study.
 
-**Problem**: Connection reset errors (`ERR_CONNECTION_RESET`) when scanning large repositories.
-
-**Cause**: Flask development server has a 120-second timeout limit. Large repositories can take 10-15+ minutes to scan.
-
-**Solution**: Install and use Waitress (production WSGI server):
 ```powershell
-pip install waitress
-python "C:\New folder\ui_app.py"
+$mysql = "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe"
+& $mysql -u root -p -e "CREATE DATABASE sbom_monitoring_tejasai"
+& $mysql -u root -p sbom_monitoring_tejasai -e "source sql/schema.sql"
+& $mysql -u root -p sbom_monitoring_tejasai -e "source sql/app_settings_data.sql"
 ```
 
-Waitress has no timeout limit and handles long-running requests much better.
+### 5. Add the private settings
 
-### Common Errors
+These two files hold secrets and are never committed (they are listed in `.gitignore`).
 
-#### `'SBOMScanner' object has no attribute 'get_report'`
+**Database connection:** copy the example file and fill in your MySQL details:
 
-**Solution**: 
-1. Stop the Flask server (Ctrl+C)
-2. Clear Python cache:
-   ```powershell
-   Get-ChildItem -Path . -Recurse -Filter "__pycache__" | Remove-Item -Recurse -Force
-   ```
-3. Restart the server
-
-#### `ERR_FILE_NOT_FOUND`
-
-**Solution**: Usually a browser caching issue. Try:
-- Hard refresh (Ctrl+F5)
-- Clear browser cache
-- Restart the server
-
-#### `Git executable not found`
-
-**Solution**: 
-- Install Git: https://git-scm.com/download/win
-- Or add Git to your system PATH
-- The scanner will also check common Windows installation paths automatically
-
-#### `Syft not found` or `Grype not found`
-
-**Solution**:
-- Verify the tools exist in `sbom-tools/syft/` and `sbom-tools/grype/`
-- Or set environment variables:
-  ```powershell
-  $env:SYFT_PATH="C:\path\to\syft.exe"
-  $env:GRYPE_PATH="C:\path\to\grype.exe"
-  ```
-
-#### Scan fails silently
-
-**Solution**:
-- Check the server console output for detailed error messages
-- Verify the repository URL is correct and accessible
-- Check that you have sufficient disk space
-- For private repositories, ensure you have proper authentication
-
-### Getting Help
-
-- Check the server console for detailed error messages
-- Verify all prerequisites are installed correctly
-- Test with a small repository first (e.g., `https://github.com/gin-gonic/gin`)
-- Review the scan logs in the terminal output
-
-## Project Structure
-
-```
-C:\New folder\
-├── sbom-tools/
-│   ├── sbom.py              # Main scanner module
-│   ├── syft/                # Syft binary
-│   └── grype/               # Grype binary
-├── ui/
-│   ├── templates/           # HTML templates
-│   └── static/              # CSS, JavaScript
-├── reports/                 # Generated reports (JSON/CSV files)
-│   ├── <scan-id>.json       # JSON format reports
-│   └── <scan-id>.csv        # CSV format reports
-├── temp/                    # Temporary files (created automatically)
-├── repo-cache/              # Cached repositories (created automatically)
-├── ui_app.py                # Flask web application
-├── view_reports.ps1         # PowerShell script to view reports
-├── requirements.txt         # Python dependencies
-└── README.md                # This file
+```powershell
+Copy-Item tejasai_db_config.example.py tejasai_db_config.py
+code tejasai_db_config.py
 ```
 
-### Where to Find Your Scan Files
+Set the password, and the database name if you used a different one in step 4.
 
-**Local Files**: `C:\New folder\reports\`
-   - JSON files: `<scan-id>.json`
-   - CSV files: `<scan-id>.csv`
-   - View directly or download from Web UI
+**Model API key** (only for the AI features): create a file called `.env` in the main folder with one line:
 
-## License
+```
+MODEL_API_KEY=your_key_here
+```
 
-This project uses open-source tools:
-- **Syft**: Apache License 2.0
-- **Grype**: Apache License 2.0
+The provider and model are set in `config.yaml` (Muse Spark through the Meta Model API by default).
+Any OpenAI-compatible service, including a model running on the organization's own servers, can be
+used by changing `config.yaml`. FlowTrace skips secret files such as `.env` when it reads code, so
+no credentials are sent to the model.
 
-## Contributing
+### 6. Start the platform
 
-When contributing, please:
-- Test with both small and large repositories
-- Ensure all tests pass
-- Update documentation as needed
-- Follow existing code style
+```powershell
+python ui_app.py
+```
 
-## Support
+Open http://127.0.0.1:5050 in a browser. Stop the server with **Ctrl + C**.
 
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review server console output for errors
-3. Test with a known working repository first
+## Using the platform
+
+1. **Add and scan systems:** add a GitHub repository URL or a local folder and run a scan.
+2. **Record data dependencies:** in the Data Dependencies tab, choose a system and tick the systems
+   it gets data from or sends data to, then save.
+3. **Find links in code (optional):** in Suggested Data Flows, click *Find flows in code*, then
+   approve or reject each suggestion.
+4. **See the impact:** open a system's Data Flow Tree to see its upstream and downstream systems,
+   and generate an AI impact report.
+5. **Monitoring:** set the auto-scan interval in the Settings tab.
+
+## Project structure
+
+```
+ui_app.py                 Flask application: dashboard, REST API, auto-scan loop
+dependency_routes.py      Recording and tracing data dependencies
+settings_routes.py        Auto-scan interval settings
+impact_routes.py          AI impact report
+discovery_routes.py       Suggested data flows from code and code evidence
+tejasai_db_config.example.py  Template for the database connection settings
+config.yaml               Language model provider and model
+sbom-tools/
+  sbom.py                 Runs Syft and Grype and writes JSON and CSV reports
+  db_storage.py           Saves scan results to MySQL
+  db_monitor_job.py       Compares each scan with the previous one
+flowtrace/                Language model component (FlowTrace)
+  providers/              Model connection (OpenAI-compatible) and config loading
+  reader.py, extractor.py Reads code and extracts data flows
+  capstone_facts.py       Builds facts for a system from the MySQL database
+  capstone_impact.py      Writes and checks the impact report
+  capstone_discovery.py   Turns flows found in code into suggested dependencies
+  report_store.py         Saves impact reports
+  suggestion_store.py     Saves suggestions, approvals and code evidence
+ui/templates/index.html   Dashboard page
+ui/static/                Dashboard JavaScript and CSS
+sql/schema.sql            Table structure for a new database
+sql/app_settings_data.sql Default auto-scan setting
+```
+
+## Related repository
+
+FlowTrace was first built as a prototype during the Meta Global AI Developer Hackathon
+(October 27 to November 4, 2026) as the language model part of this capstone:
+https://github.com/tejasai1/Flowtrace
+
+## Licenses of the tools used
+
+Syft and Grype are Apache License 2.0 projects by Anchore. vis-network, used to draw the data flow
+trees, is available under the Apache License 2.0 / MIT.
