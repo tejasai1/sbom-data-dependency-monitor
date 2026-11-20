@@ -1,0 +1,268 @@
+/* Data Dependencies panel: only what styles.css doesn't already cover. */
+
+.dep-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) 2fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.dep-main-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+}
+
+.dep-main-stack > .card {
+  margin: 0;
+}
+
+@media (max-width: 1000px) {
+  .dep-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dep-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 12px;
+  margin: 8px 0;
+  font: inherit;
+  border: 1px solid #c7d0dc;
+  border-radius: 8px;
+}
+
+.dep-only-linked {
+  margin: 4px 0 8px;
+}
+
+/* ---------- Step 1: repository list ---------- */
+.dep-repo-list,
+.dep-source-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid #e3e8ef;
+  border-radius: 8px;
+}
+
+.dep-repo-list {
+  max-height: 560px;
+}
+
+.dep-source-list {
+  max-height: 280px;
+}
+
+.dep-list-empty {
+  padding: 12px;
+}
+
+.dep-repo-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  font: inherit;
+  text-align: left;
+  background: #fff;
+  border: 0;
+  border-bottom: 1px solid #eef1f5;
+  cursor: pointer;
+}
+
+.dep-repo-item:hover,
+.dep-repo-item:focus-visible {
+  background: #eef3f9;
+}
+
+.dep-repo-selected,
+.dep-repo-selected:hover {
+  background: #dce8f7;
+  font-weight: 600;
+}
+
+.dep-repo-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dep-badges {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.dep-badge {
+  font-size: 0.75em;
+  font-weight: 500;
+  padding: 1px 7px;
+  border-radius: 10px;
+  background: #e6ebf1;
+  color: #34465c;
+}
+
+/* ---------- Step 2: editor ---------- */
+.dep-label {
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+
+.dep-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 30px;
+  align-items: center;
+}
+
+.dep-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 10px;
+  border-radius: 14px;
+  background: #dce8f7;
+  color: #1f3a5f;
+  font-size: 0.9em;
+}
+
+.dep-chip-remove {
+  font: inherit;
+  line-height: 1;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #1f3a5f;
+  cursor: pointer;
+}
+
+.dep-chip-remove:hover,
+.dep-chip-remove:focus-visible {
+  background: #c3d6ee;
+}
+
+.dep-source-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 12px;
+  border-bottom: 1px solid #eef1f5;
+  cursor: pointer;
+}
+
+.dep-source-option:hover {
+  background: #f4f7fa;
+}
+
+.dep-editor-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.dep-editor-actions .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dep-error {
+  color: #a3261d;
+}
+
+.dep-pending {
+  color: #7a4d00;
+}
+
+/* ---------- Step 3: trees ---------- */
+.dep-trace-summary {
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  border-left: 4px solid #1f5a7a;
+  background: #f4f7fa;
+  border-radius: 4px;
+}
+
+.dep-sev-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.dep-sev {
+  font-size: 0.8em;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #e6ebf1;
+  color: #333;
+}
+
+.dep-sev-critical { background: #f6d5d2; color: #7d1d15; }
+.dep-sev-high     { background: #fbe3cc; color: #7a3e06; }
+.dep-sev-medium   { background: #fcf1c8; color: #6b5300; }
+.dep-sev-low      { background: #dcecdc; color: #25562a; }
+
+.dep-tree-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 800px) {
+  .dep-tree-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dep-tree-columns h4 {
+  margin: 0 0 2px;
+}
+
+.dep-tree-hint {
+  margin: 0 0 10px;
+  font-size: 0.85em;
+}
+
+.dep-tree-root {
+  font-weight: 600;
+  padding: 4px 0;
+}
+
+.dep-tree {
+  list-style: none;
+  margin: 0;
+  padding-left: 18px;
+  border-left: 2px solid #d5deea;
+}
+
+.dep-tree li {
+  padding: 3px 0;
+}
+
+.dep-tree summary {
+  cursor: pointer;
+}
+
+.dep-node {
+  font: inherit;
+  padding: 2px 8px;
+  border: 1px solid #c7d0dc;
+  border-radius: 6px;
+  background: #fff;
+  color: #1f3a5f;
+  cursor: pointer;
+}
+
+.dep-node:hover,
+.dep-node:focus-visible {
+  background: #eef3f9;
+}

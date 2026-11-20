@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>SBOM Monitoring Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dependencies.css') }}?v={{ cache_buster }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='impact.css') }}?v={{ cache_buster }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='suggestions.css') }}?v={{ cache_buster }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='evidence.css') }}?v={{ cache_buster }}">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <div class="brand-mark">S</div>
+          <div class="brand-copy">
+            <h1>SBOM Monitor</h1>
+            <p>Security dashboard</p>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button class="nav-item active" data-panel="dashboard-panel">Dashboard</button>
+          <button class="nav-item" data-panel="population-panel">Initial Population</button>
+          <button class="nav-item" data-panel="scan-panel">Run Scan</button>
+          <button class="nav-item" data-panel="results-panel">Results</button>
+          <button class="nav-item" data-panel="history-panel">History</button>
+          <button class="nav-item" data-panel="analytics-panel">Analytics</button>
+          <button class="nav-item" data-panel="dependencies-panel">Data Dependencies</button>
+          <button class="nav-item" data-panel="settings-panel">Settings</button>
+        </nav>
+
+        <div class="sidebar-footer">
+          <div class="sidebar-footer-card">
+            <span class="sidebar-footer-label">Auto monitoring</span>
+            <strong id="sidebar-scan-interval">Every 5 minutes</strong>
+          </div>
+        </div>
+      </aside>
+
+      <main class="main-area">
+        <header class="topbar">
+          <div>
+            <p class="topbar-kicker">Live security overview</p>
+            <h2>SBOM Monitoring Dashboard</h2>
+            <p class="topbar-subtitle">
+              Track repositories, run scans, review vulnerability data, manage monitoring, and open analytics from one place.
+            </p>
+          </div>
+
+          <div class="topbar-actions">
+            <div class="topbar-status">
+              <span class="live-dot"></span>
+              <span id="last-updated-text">Live data</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- DASHBOARD PANEL -->
+        <section id="dashboard-panel" class="panel-screen active-panel">
+          <div class="stats-grid">
+            <article class="metric-card metric-blue">
+              <div class="metric-label">Total Targets</div>
+              <div class="metric-value" id="dash-total-targets">0</div>
+              <div class="metric-foot">Registered repositories</div>
+            </article>
+
+            <article class="metric-card metric-green">
+              <div class="metric-label">Active Targets</div>
+              <div class="metric-value" id="dash-active-targets">0</div>
+              <div class="metric-foot">Currently monitored</div>
+            </article>
+
+            <article class="metric-card metric-purple">
+              <div class="metric-label">Recent Monitor Entries</div>
+              <div class="metric-value" id="dash-total-scans">0</div>
+              <div class="metric-foot">Latest monitoring records</div>
+            </article>
+
+            <article class="metric-card metric-orange">
+              <div class="metric-label">Total Vulnerabilities</div>
+              <div class="metric-value" id="dash-total-vulns">0</div>
+              <div class="metric-foot">Across monitor records</div>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <section class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Automated comparison</p>
+                  <h3>Monitoring Summary</h3>
+                </div>
+                <button id="refresh-monitor" type="button" class="btn btn-secondary">Refresh</button>
+              </div>
+
+              <div id="monitor-status" class="muted small-status"></div>
+
+              <div class="table-shell">
+                <table id="monitor-table">
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Target</th>
+                      <th>New</th>
+                      <th>Resolved</th>
+                      <th>Total</th>
+                      <th>Critical</th>
+                      <th>High</th>
+                      <th>Medium</th>
+                      <th>Low</th>
+                      <th>Latest Scan</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </section>
+
+            <div class="side-stack">
+              <section class="card">
+                <div class="card-header">
+                  <div>
+                    <p class="section-kicker">Recent activity</p>
+                    <h3>Latest Scan Snapshot</h3>
+                  </div>
+                </div>
+
+                <div class="table-shell compact-table side-table">
+                  <table id="latest-scan-table">
+                    <thead>
+                      <tr>
+                        <th>Scan ID</th>
+                        <th>Target</th>
+                        <th>Time</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="card">
+                <div class="card-header">
+                  <div>
+                    <p class="section-kicker">Target status</p>
+                    <h3>Target Health</h3>
+                  </div>
+                </div>
+
+                <div class="health-list">
+                  <div class="health-item">
+                    <span class="health-dot active-dot"></span>
+                    <span>Active Targets</span>
+                    <strong id="health-active-count">0</strong>
+                  </div>
+                  <div class="health-item">
+                    <span class="health-dot inactive-dot"></span>
+                    <span>Inactive Targets</span>
+                    <strong id="health-inactive-count">0</strong>
+                  </div>
+                  <div class="health-item">
+                    <span class="health-dot info-dot"></span>
+                    <span>Latest Monitor Rows</span>
+                    <strong id="health-monitor-count">0</strong>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <!-- INITIAL POPULATION PANEL -->
+        <section id="population-panel" class="panel-screen hidden-panel">
+          <div class="population-grid">
+            <div class="population-main">
+              <section class="card">
+                <div class="card-header">
+                  <div>
+                    <p class="section-kicker">Baseline repositories</p>
+                    <h3>Initial Population</h3>
+                  </div>
+
+                  <div class="header-actions">
+                    <button id="scan-all-active" type="button" class="btn btn-primary btn-inline">
+                      Scan All Active Targets
+                    </button>
+                    <button id="refresh-dataset" type="button" class="btn btn-secondary">
+                      Refresh
+                    </button>
+                  </div>
+                </div>
+
+                <div id="population-action-status" class="status-box compact-status-box">
+                  Imported targets can now be scanned directly from this table.
+                </div>
+
+                <div class="filters-row">
+                  <div class="filter-group">
+                    <label for="target-search" class="sr-only">Search targets</label>
+                    <input
+                      type="text"
+                      id="target-search"
+                      placeholder="Search target, type, source, notes..."
+                      aria-label="Search targets">
+                  </div>
+
+                  <div class="filter-group">
+                    <label for="target-filter" class="sr-only">Filter targets by status</label>
+                    <select id="target-filter" aria-label="Filter targets by status">
+                      <option value="all">All</option>
+                      <option value="active">Active only</option>
+                      <option value="inactive">Inactive only</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="table-shell">
+                  <table id="dataset-table">
+                    <thead>
+                      <tr>
+                        <th>Target</th>
+                        <th>Type</th>
+                        <th>Source</th>
+                        <th>Status</th>
+                        <th>Last Scan</th>
+                        <th>Notes</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </section>
+
+              <div class="population-bottom-grid">
+                <section class="card">
+                  <div class="card-header">
+                    <div>
+                      <p class="section-kicker">Recent import activity</p>
+                      <h3>Import History</h3>
+                    </div>
+                  </div>
+
+                  <div id="import-history-empty" class="empty-state">
+                    No import has been run yet in this session.
+                  </div>
+
+                  <div class="table-shell compact-table hidden-panel" id="import-history-shell">
+                    <table id="import-history-table">
+                      <thead>
+                        <tr>
+                          <th>Time</th>
+                          <th>Mode</th>
+                          <th>Received</th>
+                          <th>Inserted</th>
+                          <th>Duplicates</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                </section>
+
+                <section class="card">
+                  <div class="card-header">
+                    <div>
+                      <p class="section-kicker">Population insights</p>
+                      <h3>Target Summary</h3>
+                    </div>
+                  </div>
+
+                  <div class="summary-stat-grid">
+                    <div class="mini-stat-card">
+                      <span class="mini-stat-label">Active</span>
+                      <strong id="summary-active-count">0</strong>
+                    </div>
+                    <div class="mini-stat-card">
+                      <span class="mini-stat-label">Inactive</span>
+                      <strong id="summary-inactive-count">0</strong>
+                    </div>
+                    <div class="mini-stat-card">
+                      <span class="mini-stat-label">Unique Sources</span>
+                      <strong id="summary-source-count">0</strong>
+                    </div>
+                    <div class="mini-stat-card">
+                      <span class="mini-stat-label">Unique Types</span>
+                      <strong id="summary-type-count">0</strong>
+                    </div>
+                  </div>
+
+                  <div class="summary-lists">
+                    <div class="summary-list-card">
+                      <h4>By Source</h4>
+                      <div id="summary-by-source" class="summary-badge-list"></div>
+                    </div>
+                    <div class="summary-list-card">
+                      <h4>By Type</h4>
+                      <div id="summary-by-type" class="summary-badge-list"></div>
+                    </div>
+                  </div>
+                </section>
+
+                <section class="card full-span">
+                  <div class="card-header">
+                    <div>
+                      <p class="section-kicker">Import support</p>
+                      <h3>Import Guide</h3>
+                    </div>
+                  </div>
+
+                  <div class="guide-grid">
+                    <div class="guide-card">
+                      <h4>CSV Format</h4>
+                      <p>Use these headers in your CSV file:</p>
+                      <code>target_id,target_type,source_name,notes,active</code>
+                    </div>
+
+                    <div class="guide-card">
+                      <h4>JSON Format</h4>
+                      <p>Use either an array of rows or an object with a <code>rows</code> array.</p>
+                    </div>
+
+                    <div class="guide-card">
+                      <h4>Accepted Active Values</h4>
+                      <p><code>1</code>, <code>0</code>, <code>true</code>, <code>false</code>, <code>yes</code>, <code>no</code></p>
+                    </div>
+
+                    <div class="guide-card">
+                      <h4>Duplicate Handling</h4>
+                      <p>Rows with an existing <code>target_id</code> are skipped during bulk import.</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <div class="population-side-stack">
+              <section class="card action-card">
+                <div class="card-header">
+                  <div>
+                    <p class="section-kicker">Add repository</p>
+                    <h3>Add New Target</h3>
+                  </div>
+                </div>
+
+                <form id="add-target-form" class="scan-form">
+                  <label for="new-target-id">Target ID</label>
+                  <input type="text" id="new-target-id" placeholder="mysql or repo-name" required>
+
+                  <label for="new-target-type">Target Type</label>
+                  <input type="text" id="new-target-type" placeholder="linux_binary / github_repo / local_path" required>
+
+                  <label for="new-source-name">Source Name</label>
+                  <input type="text" id="new-source-name" placeholder="manual_entry or dataset_name" required>
+
+                  <label for="new-notes">Notes</label>
+                  <input type="text" id="new-notes" placeholder="Short note about this target">
+
+                  <label class="toggle-option single-toggle">
+                    <input type="checkbox" id="new-active" checked>
+                    <span>Set target as active</span>
+                  </label>
+
+                  <button type="submit" class="btn btn-primary">Add Target</button>
+                </form>
+
+                <div id="add-target-status" class="status-box">Add one repository manually.</div>
+              </section>
+
+              <section class="card action-card">
+                <div class="card-header">
+                  <div>
+                    <p class="section-kicker">Bulk import</p>
+                    <h3>Import Targets</h3>
+                  </div>
+                </div>
+
+                <form id="import-file-form" class="scan-form">
+                  <label for="import-file">Upload CSV or JSON</label>
+                  <input type="file" id="import-file" accept=".csv,.json">
+
+                  <button type="submit" class="btn btn-primary">Import File</button>
+                </form>
+
+                <form id="import-json-text-form" class="scan-form import-text-form">
+                  <label for="import-json-text">Or paste JSON</label>
+                  <textarea id="import-json-text" rows="8" placeholder='[{"target_id":"openssl","target_type":"linux_binary","source_name":"dr_charles_dataset","notes":"Imported","active":1}]'></textarea>
+
+                  <button type="submit" class="btn btn-secondary">Import Pasted JSON</button>
+                </form>
+
+                <div class="import-help">
+                  <strong>CSV headers:</strong>
+                  <code>target_id,target_type,source_name,notes,active</code>
+                </div>
+
+                <div id="import-status" class="status-box">Import targets from CSV, JSON file, or pasted JSON.</div>
+              </section>
+            </div>
+          </div>
+        </section>
+
+        <!-- RUN SCAN PANEL -->
+        <section id="scan-panel" class="panel-screen hidden-panel">
+          <div class="single-panel-wrap">
+            <section class="card action-card max-900">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Manual execution</p>
+                  <h3>Run New Scan</h3>
+                </div>
+              </div>
+
+              <form id="scan-form" class="scan-form">
+                <label for="target-input">Repository URL or local path</label>
+                <input
+                  id="target-input"
+                  name="target"
+                  type="text"
+                  placeholder="https://github.com/owner/repo or local path"
+                  value="{{ default_target }}"
+                  required>
+
+                <div class="toggle-row">
+                  <label class="toggle-option">
+                    <input type="checkbox" id="use-cache" checked>
+                    <span>Use cache</span>
+                  </label>
+
+                  <label class="toggle-option">
+                    <input type="checkbox" id="shallow-clone" checked>
+                    <span>Shallow clone</span>
+                  </label>
+                </div>
+
+                <button type="submit" id="scan-button" class="btn btn-primary">Run Scan</button>
+              </form>
+
+              <div id="status" aria-live="polite" class="status-box">Ready to run a scan.</div>
+            </section>
+          </div>
+        </section>
+
+        <!-- RESULTS PANEL -->
+        <section id="results-panel" class="panel-screen hidden-panel">
+          <section class="card">
+            <div class="card-header">
+              <div>
+                <p class="section-kicker">Latest manual result</p>
+                <h3>Scan Result</h3>
+              </div>
+            </div>
+
+            <div id="summary" class="summary-box">
+              No scan result yet. Run a scan to see package details and dependency tree.
+            </div>
+            <div id="reports-links" class="report-links"></div>
+
+            <div class="result-columns">
+              <div class="result-panel">
+                <h4>Package Vulnerability Details</h4>
+                <div class="table-shell">
+                  <table id="vulnerability-table">
+                    <thead>
+                      <tr>
+                        <th>Package</th>
+                        <th>Version</th>
+                        <th>Type</th>
+                        <th>Vulnerability</th>
+                        <th>Severity</th>
+                        <th>Fixed Version</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="result-panel">
+                <h4>Dependency Tree</h4>
+                <div id="dependency-tree" class="tree"></div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <!-- HISTORY PANEL -->
+        <section id="history-panel" class="panel-screen hidden-panel">
+          <div class="history-grid">
+            <section class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Recent scans</p>
+                  <h3>Scan History</h3>
+                </div>
+              </div>
+
+              <div class="table-shell">
+                <table id="history-scan-table">
+                  <thead>
+                    <tr>
+                      <th>Scan ID</th>
+                      <th>Target</th>
+                      <th>Time</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Monitoring history</p>
+                  <h3>Monitor Log History</h3>
+                </div>
+              </div>
+
+              <div class="table-shell">
+                <table id="history-monitor-table">
+                  <thead>
+                    <tr>
+                      <th>Timestamp</th>
+                      <th>Target</th>
+                      <th>New</th>
+                      <th>Resolved</th>
+                      <th>Total</th>
+                      <th>Critical</th>
+                      <th>High</th>
+                      <th>Medium</th>
+                      <th>Low</th>
+                      <th>Latest Scan</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <!-- ANALYTICS PANEL -->
+        <section id="analytics-panel" class="panel-screen hidden-panel">
+          <section class="card">
+            <div class="card-header">
+              <div>
+                <p class="section-kicker">Repository-level analytics</p>
+                <h3>Analytics Dashboard</h3>
+              </div>
+
+              <div class="header-actions">
+                <button id="refresh-analytics" type="button" class="btn btn-primary btn-inline">
+                  Refresh Analytics
+                </button>
+                <button id="reload-analytics-frame" type="button" class="btn btn-secondary">
+                  Reload View
+                </button>
+              </div>
+            </div>
+
+            <div id="analytics-status" class="status-box compact-status-box">
+              {% if analytics_ready %}
+              Analytics dashboard is ready. You can refresh it after new scans.
+              {% else %}
+              Analytics dashboard has not been generated yet. Click "Refresh Analytics" to build it.
+              {% endif %}
+            </div>
+
+            <div class="analytics-frame-shell">
+              <iframe
+                id="analytics-frame"
+                class="analytics-frame"
+                src="{{ url_for('static', filename='dashboard_plus/dashboard_plus.html') }}?v={{ cache_buster }}">
+              </iframe>
+            </div>
+          </section>
+        </section>
+
+        <!-- DATA DEPENDENCIES PANEL -->
+        <section id="dependencies-panel" class="panel-screen hidden-panel">
+          <div class="dep-layout">
+            <section class="card dep-repo-card">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Step 1: choose a repository</p>
+                  <h3>Repositories</h3>
+                </div>
+                <div class="header-actions">
+                  <button id="dep-refresh" type="button" class="btn btn-secondary">Refresh</button>
+                </div>
+              </div>
+
+              <input type="text" id="dep-repo-search" class="dep-search" placeholder="Search repositories..." aria-label="Search repositories">
+
+              <label class="toggle-option single-toggle dep-only-linked">
+                <input type="checkbox" id="dep-only-linked">
+                <span>Only show repositories with data flows</span>
+              </label>
+
+              <div id="dep-repo-count" class="muted small-status"></div>
+              <ul id="dep-repo-list" class="dep-repo-list"></ul>
+            </section>
+
+            <div class="dep-main-stack">
+              <section class="card" id="dep-editor-card">
+                <div class="card-header">
+                  <div>
+                    <p class="section-kicker">Step 2: pick where its data comes from</p>
+                    <h3 id="dep-editor-title">Select a repository</h3>
+                  </div>
+                </div>
+
+                <div id="dep-editor-empty" class="empty-state">
+                  Choose a repository on the left to record which repositories it gets data from.
+                </div>
+
+                <div id="dep-editor" class="hidden-panel">
+                  <p class="dep-label">Gets data from</p>
+                  <div id="dep-chips" class="dep-chips"></div>
+
+                  <input type="text" id="dep-source-search" class="dep-search" placeholder="Search repositories to add..." aria-label="Search repositories to add as sources">
+                  <ul id="dep-source-list" class="dep-source-list"></ul>
+
+                  <div class="dep-editor-actions">
+                    <button id="dep-save" type="button" class="btn btn-primary btn-inline">Save sources</button>
+                    <button id="dep-reset" type="button" class="btn btn-secondary">Undo changes</button>
+                  </div>
+
+                  <div id="dep-save-status" class="status-box">Tick every repository this one gets data from, then save.</div>
+                </div>
+              </section>
+
+              <section class="card" id="sug-card">
+                   <div class="card-header">
+                     <div>
+                       <p class="section-kicker">Step 2b: suggested from code</p>
+                       <h3>Suggested Data Flows</h3>
+                     </div>
+                     <div class="header-actions">
+                       <button id="sug-run" type="button" class="btn btn-primary btn-inline" disabled>Find flows in code</button>
+                     </div>
+                   </div>
+                   <div id="sug-empty" class="empty-state">Select a repository in Step 1 to see flows suggested from its code.</div>
+                   <div id="sug-body" class="hidden-panel">
+                     <p class="muted">The model reads this repository's code and suggests data dependencies with code evidence. Nothing is recorded until you approve it. <span id="sug-total"></span></p>
+                     <div id="sug-status" class="status-box"></div>
+                     <ul id="sug-list" class="sug-list"></ul>
+                   </div>
+              </section>
+              <section class="card" id="dep-tree-card">
+                <div class="card-header">
+                  <div>
+                    <p class="section-kicker">Step 3: review</p>
+                    <h3>Data Flow Tree</h3>
+                  </div>
+                </div>
+
+                <div id="dep-tree-empty" class="empty-state">The tree for the selected repository appears here.</div>
+
+                <div id="dep-tree" class="hidden-panel">
+                  <div id="dep-vuln-summary" class="dep-trace-summary"></div>
+                  <div class="dep-tree-columns">
+                    <div>
+                      <h4>Gets data from</h4>
+                      <p class="muted dep-tree-hint">Where this repository's data comes from, and where that comes from.</p>
+                      <div id="dep-tree-upstream"></div>
+                    </div>
+                    <div>
+                      <h4>Sends data to</h4>
+                      <p class="muted dep-tree-hint">Repositories that could be affected if this one is compromised.</p>
+                      <div id="dep-tree-downstream"></div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+                               <section class="card" id="imp-card">
+                   <div class="card-header">
+                     <div>
+                       <p class="section-kicker">Step 4: AI impact report</p>
+                       <h3>Impact Report</h3>
+                     </div>
+                     <div class="header-actions">
+                       <button id="imp-regenerate" type="button" class="btn btn-secondary hidden-panel">Regenerate</button>
+                       <button id="imp-generate" type="button" class="btn btn-primary btn-inline" disabled>Generate impact report</button>
+                     </div>
+                   </div>
+
+                   <div id="imp-empty" class="empty-state">Select a repository in Step 1 to generate its impact report.</div>
+
+                   <div id="imp-body" class="hidden-panel">
+                     <p class="muted">Repository: <strong id="imp-target"></strong></p>
+                     <div id="imp-status" class="status-box"></div>
+                     <div id="imp-result" class="hidden-panel">
+                       <div class="imp-head">
+                         <span id="imp-risk" class="imp-risk"></span>
+                         <span id="imp-verify" class="imp-verify"></span>
+                       </div>
+                       <p id="imp-summary" class="imp-summary"></p>
+                       <div id="imp-graph" class="imp-graph"></div>
+                       <div class="imp-legend">
+                         <span><span class="imp-key" style="background:#fde0dc;border-color:#b3261e"></span>Critical findings</span>
+                         <span><span class="imp-key" style="background:#fff0db;border-color:#e8710a"></span>High findings</span>
+                         <span><span class="imp-key" style="background:#fffbe6;border-color:#c9a400"></span>Medium findings</span>
+                         <span><span class="imp-key" style="background:#eef4f5;border-color:#5e8c93"></span>Low or none</span>
+                         <span>Thick border: selected repository or key exposure</span>
+                         <span>Columns: how many hops away each system is</span>
+                         <span>Click an arrow to see the code behind it</span>
+                       </div>
+                       <div class="imp-columns">
+                         <div>
+                           <h4>Key exposures</h4>
+                           <ul id="imp-exposures" class="imp-list"></ul>
+                         </div>
+                         <div>
+                           <h4>Recommendations</h4>
+                           <ul id="imp-recs" class="imp-list"></ul>
+                         </div>
+                       </div>
+                       <p class="muted imp-note">Built only from the recorded data flows and each system's latest scan. Downstream systems could be exposed; this does not mean they are compromised.</p>
+                     </div>
+                   </div>
+                 </section>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS PANEL -->
+        <section id="settings-panel" class="panel-screen hidden-panel">
+          <div class="single-panel-wrap">
+            <section class="card action-card max-900">
+              <div class="card-header">
+                <div>
+                  <p class="section-kicker">Background monitoring</p>
+                  <h3>Auto Scan</h3>
+                </div>
+              </div>
+
+              <form id="settings-autoscan-form" class="scan-form">
+                <label for="settings-autoscan-interval">Scan all active targets every</label>
+                <select id="settings-autoscan-interval">
+                  <option value="">Loading...</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Save</button>
+              </form>
+
+              <div id="settings-autoscan-status" class="status-box">
+                The interval is the wait after one auto scan finishes before the next one starts.
+              </div>
+
+              <div class="summary-stat-grid">
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Current interval</span>
+                  <strong id="settings-current-interval">-</strong>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Last auto scan finished</span>
+                  <strong id="settings-last-scan">-</strong>
+                </div>
+                <div class="mini-stat-card">
+                  <span class="mini-stat-label">Next auto scan</span>
+                  <strong id="settings-next-scan">-</strong>
+                </div>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <footer class="footer-note">
+          Reports are stored in the <code>{{ reports_dir }}</code> folder.
+        </footer>
+      </main>
+    </div>
+
+    <script>
+      window.SBOM_UI = {
+        reportsDir: "{{ reports_dir }}"
+      };
+    </script>
+    <script src="{{ url_for('static', filename='app.js') }}?v={{ cache_buster }}"></script>
+    <script src="{{ url_for('static', filename='evidence.js') }}?v={{ cache_buster }}"></script>
+    <script src="{{ url_for('static', filename='dependencies.js') }}?v={{ cache_buster }}"></script>
+    <script src="https://unpkg.com/vis-network@9.1.9/standalone/umd/vis-network.min.js"></script>
+    <script src="{{ url_for('static', filename='impact.js') }}?v={{ cache_buster }}"></script>
+    <script src="{{ url_for('static', filename='suggestions.js') }}?v={{ cache_buster }}"></script>
+    <script src="{{ url_for('static', filename='settings.js') }}?v={{ cache_buster }}"></script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+repo,total_packages,total_vulns,vuln_density_per_100_packages,cluster,risk_segment
+https://github.com/adeyosemanputra/pygoat,89,5177,5816.853932584269,2,High Risk
+https://github.com/snyk-labs/nodejs-goof,578,397,68.68512110726644,0,Medium Risk
+https://github.com/snyk-labs/java-goof,58,172,296.551724137931,2,Medium Risk
+https://github.com/OWASP/NodeGoat,389,146,37.53213367609254,0,Medium Risk
+https://github.com/saleor/saleor-dashboard,2010,68,3.383084577114428,0,Low Risk
+https://github.com/we45/Vulnerable-Flask-App,35,55,157.1428571428571,2,Low Risk
+https://github.com/dolevf/Damn-Vulnerable-GraphQL-Application,51,33,64.70588235294117,2,Low Risk
+https://github.com/anxolerd/dvpwa,20,30,150.0,2,Low Risk
+https://github.com/saleor/storefront,1060,19,1.792452830188679,0,Low Risk
+https://github.com/metabase/metabase,333,13,3.903903903903904,1,Low Risk

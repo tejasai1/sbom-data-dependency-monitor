@@ -1,0 +1,7 @@
+metric,value
+total_repositories,23.0
+total_packages,12470.0
+total_vulnerabilities,6138.0
+avg_vuln_density,287.76
+outlier_count,9.0
+high_risk_repositories,7.0

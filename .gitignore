@@ -1,0 +1,32 @@
+# Secrets: API key and database password
+.env
+tejasai_db_config.py
+
+# Python environment and cache
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Backup copies
+*.bak
+
+# Generated output
+temp/
+sbom_outputs/
+reports/
+structure.txt
+/Syft
+
+# Original dataset and database dumps (not used by the app)
+sergey_dataset.xlsx
+sbom_monitoring_db.sql
+sbom_monitoring_db_utf8.sql
+
+# Editor settings
+.vscode/
+
+
+# Scanner programs (downloaded separately from Anchore's releases)
+sbom-tools/syft/syft.exe
+sbom-tools/grype/grype.exe

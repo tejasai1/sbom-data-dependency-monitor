@@ -1,0 +1,8 @@
+repo,actual_high_risk,predicted_high_risk,predicted_probability
+https://github.com/snyk-labs/java-goof,1,0,0.49333333333333335
+https://github.com/adeyosemanputra/pygoat,1,0,0.4866666666666667
+https://github.com/prometheus/prometheus,0,0,0.36
+https://github.com/meilisearch/meilisearch,0,0,0.21333333333333335
+https://github.com/metabase/metabase,0,0,0.14
+https://github.com/grafana/grafana,0,0,0.08
+https://github.com/prometheus/alertmanager,0,0,0.04666666666666667

@@ -1,0 +1,2 @@
+model,target,mae,r2
+LinearRegression,total_vulns,110.8838,0.9887
