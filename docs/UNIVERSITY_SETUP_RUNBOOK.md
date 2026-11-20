@@ -14,7 +14,7 @@ Tick each box as you go.
 - [ ] Your **GitHub sign-in** (tejasai1), to clone this private repository.
 - [ ] Your **Meta model API key**, for the AI features. Keep it in a password manager, not in a file
       or an email.
-- [ ] The **Python version** used on the laptop: `________` (fill this in before switching machines;
+- [ ] The **Python version** used on the laptop: `3.14.6` (fill this in before switching machines;
       the laptop command is `.\venv\Scripts\python.exe --version`).
 
 ---
@@ -26,7 +26,7 @@ Install in this order.
 | # | Program | Version | Download | During install |
 |---|---|---|---|---|
 | 1 | Git for Windows | 2.51 or newer | https://git-scm.com/download/win | Keep the defaults. |
-| 2 | Python | Same as the laptop, at least 3.11 | https://www.python.org/downloads/windows/ | Tick **Add python.exe to PATH** on the first screen. |
+| 2 | Python | 3.14.6 (same as the laptop) | https://www.python.org/downloads/windows/ | Tick **Add python.exe to PATH** on the first screen. |
 | 3 | MySQL Server 8.0 + Workbench | 8.0 | https://dev.mysql.com/downloads/installer/ | Choose **Server** and **Workbench**. Set a root password and write it down safely. Keep **Start the MySQL Server at System Startup** ticked. |
 | 4 | Visual Studio Code (optional) | Latest | https://code.visualstudio.com/ | Tick **Add to PATH**, so the `code` command works. Notepad also works. |
 
