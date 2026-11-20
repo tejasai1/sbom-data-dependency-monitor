@@ -66,3 +66,5 @@ waitress==3.0.2
 webcolors==25.10.0
 Werkzeug==3.1.7
 xlsxwriter==3.2.9
+openai==3.46.0
+PyYAML==6.0.3
